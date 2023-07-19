@@ -118,7 +118,7 @@ class LoginForm(forms.Form):
             not_active = qs.filter(is_active=False)
             if not_active.exists():
                 # not active, check email activation
-                link = reverse("account:resend-activation")
+                link = reverse("accounts:resend-activation")
                 reconfirm_msg = """Go to <a href='{resend_link}'>
                 resend confirmation email</a>.
                 """.format(resend_link=link)

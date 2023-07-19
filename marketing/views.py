@@ -20,7 +20,7 @@ class MarketingPreferenceUpdateView(SuccessMessageMixin, UpdateView):
 
     def dispatch(self, *args, **kwargs):
         user = self.request.user
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return redirect("/login/?next=/settings/email/") # HttpResponse("Not allowed", status=400)
         return super(MarketingPreferenceUpdateView, self).dispatch(*args, **kwargs)
 

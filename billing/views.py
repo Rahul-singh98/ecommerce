@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 
 
 import stripe
@@ -29,7 +29,7 @@ def payment_method_view(request):
         return redirect("/cart")
     next_url = None
     next_ = request.GET.get("next")
-    if is_safe_url(next_, request.get_host()):
+    if url_has_allowed_host_and_scheme(next_, request.get_host()):
         next_url = next_
     return render(
         request,

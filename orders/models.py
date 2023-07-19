@@ -288,7 +288,7 @@ class ProductPurchase(models.Model):
     billing_profile = models.ForeignKey(
         BillingProfile, on_delete=models.DO_NOTHING
     )  # billingprofile.productpurchase_set.all()
-    product = models.ForeignKey(Product)  # product.productpurchase_set.count()
+    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)  # product.productpurchase_set.count()
     refunded = models.BooleanField(default=False)
     updated = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)

@@ -13,26 +13,31 @@ from billing.models import BillingProfile
 from orders.models import Order
 from products.models import Product
 from .models import Cart
+from ecommerce.utils import is_ajax
 
 
 import stripe
-STRIPE_SECRET_KEY = getattr(settings, "STRIPE_SECRET_KEY", "sk_test_cu1lQmcg1OLffhLvYrSCp5XE")
-STRIPE_PUB_KEY =  getattr(settings, "STRIPE_PUB_KEY", 'pk_test_PrV61avxnHaWIYZEeiYTTVMZ')
-stripe.api_key = STRIPE_SECRET_KEY
 
+STRIPE_SECRET_KEY = getattr(
+    settings, "STRIPE_SECRET_KEY", "sk_test_cu1lQmcg1OLffhLvYrSCp5XE"
+)
+STRIPE_PUB_KEY = getattr(settings, "STRIPE_PUB_KEY", "pk_test_PrV61avxnHaWIYZEeiYTTVMZ")
+stripe.api_key = STRIPE_SECRET_KEY
 
 
 def cart_detail_api_view(request):
     cart_obj, new_obj = Cart.objects.new_or_get(request)
-    products = [{
-            "id": x.id,
-            "url": x.get_absolute_url(),
-            "name": x.name, 
-            "price": x.price
-            } 
-            for x in cart_obj.products.all()]
-    cart_data  = {"products": products, "subtotal": cart_obj.subtotal, "total": cart_obj.total}
+    products = [
+        {"id": x.id, "url": x.get_absolute_url(), "name": x.name, "price": x.price}
+        for x in cart_obj.products.all()
+    ]
+    cart_data = {
+        "products": products,
+        "subtotal": cart_obj.subtotal,
+        "total": cart_obj.total,
+    }
     return JsonResponse(cart_data)
+
 
 def cart_home(request):
     cart_obj, new_obj = Cart.objects.new_or_get(request)
@@ -40,8 +45,8 @@ def cart_home(request):
 
 
 def cart_update(request):
-    product_id = request.POST.get('product_id')
-    
+    product_id = request.POST.get("product_id")
+
     if product_id is not None:
         try:
             product_obj = Product.objects.get(id=product_id)
@@ -53,29 +58,28 @@ def cart_update(request):
             cart_obj.products.remove(product_obj)
             added = False
         else:
-            cart_obj.products.add(product_obj) # cart_obj.products.add(product_id)
+            cart_obj.products.add(product_obj)  # cart_obj.products.add(product_id)
             added = True
-        request.session['cart_items'] = cart_obj.products.count()
+        request.session["cart_items"] = cart_obj.products.count()
         # return redirect(product_obj.get_absolute_url())
-        if request.is_ajax(): # Asynchronous JavaScript And XML / JSON
+        if is_ajax(request):  # Asynchronous JavaScript And XML / JSON
             print("Ajax request")
             json_data = {
                 "added": added,
                 "removed": not added,
-                "cartItemCount": cart_obj.products.count()
+                "cartItemCount": cart_obj.products.count(),
             }
-            return JsonResponse(json_data, status=200) # HttpResponse
+            return JsonResponse(json_data, status=200)  # HttpResponse
             # return JsonResponse({"message": "Error 400"}, status=400) # Django Rest Framework
     return redirect("cart:home")
-
 
 
 def checkout_home(request):
     cart_obj, cart_created = Cart.objects.new_or_get(request)
     order_obj = None
     if cart_created or cart_obj.products.count() == 0:
-        return redirect("cart:home")  
-    
+        return redirect("cart:home")
+
     login_form = LoginForm(request=request)
     guest_form = GuestForm(request=request)
     address_form = AddressCheckoutForm()
@@ -83,21 +87,24 @@ def checkout_home(request):
 
     shipping_address_required = not cart_obj.is_digital
 
-
     shipping_address_id = request.session.get("shipping_address_id", None)
 
-    billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(request)
+    billing_profile, billing_profile_created = BillingProfile.objects.new_or_get(
+        request
+    )
     address_qs = None
     has_card = False
     if billing_profile is not None:
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             address_qs = Address.objects.filter(billing_profile=billing_profile)
-        order_obj, order_obj_created = Order.objects.new_or_get(billing_profile, cart_obj)
+        order_obj, order_obj_created = Order.objects.new_or_get(
+            billing_profile, cart_obj
+        )
         if shipping_address_id:
             order_obj.shipping_address = Address.objects.get(id=shipping_address_id)
             del request.session["shipping_address_id"]
         if billing_address_id:
-            order_obj.billing_address = Address.objects.get(id=billing_address_id) 
+            order_obj.billing_address = Address.objects.get(id=billing_address_id)
             del request.session["billing_address_id"]
         if billing_address_id or shipping_address_id:
             order_obj.save()
@@ -109,13 +116,13 @@ def checkout_home(request):
         if is_prepared:
             did_charge, crg_msg = billing_profile.charge(order_obj)
             if did_charge:
-                order_obj.mark_paid() # sort a signal for us
-                request.session['cart_items'] = 0
-                del request.session['cart_id']
+                order_obj.mark_paid()  # sort a signal for us
+                request.session["cart_items"] = 0
+                del request.session["cart_id"]
                 if not billing_profile.user:
-                    '''
+                    """
                     is this the best spot?
-                    '''
+                    """
                     billing_profile.set_cards_inactive()
                 return redirect("cart:success")
             else:
@@ -135,16 +142,5 @@ def checkout_home(request):
     return render(request, "carts/checkout.html", context)
 
 
-
-
-
-
-
 def checkout_done_view(request):
     return render(request, "carts/checkout-done.html", {})
-
-
-
-
-
-

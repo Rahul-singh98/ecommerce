@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
 from .forms import ContactForm
+from ecommerce.utils import is_ajax
 
 
 def home_page(request):
@@ -11,18 +12,14 @@ def home_page(request):
     context = {
         "title": "Hello World!",
         "content": " Welcome to the homepage.",
-
     }
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         context["premium_content"] = "YEAHHHHHH"
     return render(request, "home_page.html", context)
 
 
 def about_page(request):
-    context = {
-        "title": "About Page",
-        "content": " Welcome to the about page."
-    }
+    context = {"title": "About Page", "content": " Welcome to the about page."}
     return render(request, "home_page.html", context)
 
 
@@ -34,14 +31,13 @@ def contact_page(request):
         "form": contact_form,
     }
     if contact_form.is_valid():
-        print(contact_form.cleaned_data)
-        if request.is_ajax():
+        if is_ajax(request):
             return JsonResponse({"message": "Thank you for your submission"})
 
     if contact_form.errors:
         errors = contact_form.errors.as_json()
-        if request.is_ajax():
-            return HttpResponse(errors, status=400, content_type='application/json')
+        if is_ajax(request):
+            return HttpResponse(errors, status=400, content_type="application/json")
 
     # if request.method == "POST":
     #     #print(request.POST)

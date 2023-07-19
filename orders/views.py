@@ -5,6 +5,7 @@ from django.shortcuts import render
 
 from billing.models import BillingProfile
 from .models import Order, ProductPurchase
+from ecommerce.utils import is_ajax
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -37,7 +38,7 @@ class LibraryView(LoginRequiredMixin, ListView):
 
 class VerifyOwnership(View):
     def get(self, request, *args, **kwargs):
-        if request.is_ajax():
+        if is_ajax(request):
             data = request.GET 
             product_id = request.GET.get('product_id', None)
             if product_id is not None:

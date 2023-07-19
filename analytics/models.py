@@ -12,9 +12,10 @@ from analytics.utils import get_client_ip
 User = settings.AUTH_USER_MODEL
 
 
-FORCE_SESSION_TO_ONE = getattr(settings, 'FORCE_SESSION_TO_ONE', False)
+FORCE_SESSION_TO_ONE = getattr(settings, "FORCE_SESSION_TO_ONE", False)
 FORCE_INACTIVE_USER_ENDSESSION = getattr(
-    settings, 'FORCE_INACTIVE_USER_ENDSESSION', False)
+    settings, "FORCE_INACTIVE_USER_ENDSESSION", False
+)
 
 
 class ObjectViewedQuerySet(models.query.QuerySet):
@@ -37,14 +38,12 @@ class ObjectViewedManager(models.Manager):
 
 class ObjectViewed(models.Model):
     # User instance instance.id
-    user = models.ForeignKey(User, blank=True, null=True)
-    ip_address = models.CharField(
-        max_length=220, blank=True, null=True)  # IP Field
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
+    ip_address = models.CharField(max_length=220, blank=True, null=True)  # IP Field
     # User, Product, Order, Cart, Address
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.DO_NOTHING)
     object_id = models.PositiveIntegerField()  # User id, Product id, Order id,
-    content_object = GenericForeignKey(
-        'content_type', 'object_id')  # Product instance
+    content_object = GenericForeignKey("content_type", "object_id")  # Product instance
     timestamp = models.DateTimeField(auto_now_add=True)
 
     objects = ObjectViewedManager()
@@ -53,21 +52,21 @@ class ObjectViewed(models.Model):
         return "%s viewed on %s" % (self.content_object, self.timestamp)
 
     class Meta:
-        ordering = ['-timestamp']  # most recent saved show up first
-        verbose_name = 'Object viewed'
-        verbose_name_plural = 'Objects viewed'
+        ordering = ["-timestamp"]  # most recent saved show up first
+        verbose_name = "Object viewed"
+        verbose_name_plural = "Objects viewed"
 
 
 def object_viewed_receiver(sender, instance, request, *args, **kwargs):
     c_type = ContentType.objects.get_for_model(sender)  # instance.__class__
     user = None
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         user = request.user
     new_view_obj = ObjectViewed.objects.create(
         user=user,
         content_type=c_type,
         object_id=instance.id,
-        ip_address=get_client_ip(request)
+        ip_address=get_client_ip(request),
     )
 
 
@@ -76,11 +75,9 @@ object_viewed_signal.connect(object_viewed_receiver)
 
 class UserSession(models.Model):
     # User instance instance.id
-    user = models.ForeignKey(User, blank=True, null=True)
-    ip_address = models.CharField(
-        max_length=220, blank=True, null=True)  # IP Field
-    session_key = models.CharField(
-        max_length=100, blank=True, null=True)  # min 50
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING)
+    ip_address = models.CharField(max_length=220, blank=True, null=True)  # IP Field
+    session_key = models.CharField(max_length=100, blank=True, null=True)  # min 50
     timestamp = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
     ended = models.BooleanField(default=False)
@@ -101,7 +98,8 @@ class UserSession(models.Model):
 def post_save_session_receiver(sender, instance, created, *args, **kwargs):
     if created:
         qs = UserSession.objects.filter(
-            user=instance.user, ended=False, active=False).exclude(id=instance.id)
+            user=instance.user, ended=False, active=False
+        ).exclude(id=instance.id)
         for i in qs:
             i.end_session()
     if not instance.active and not instance.ended:
@@ -116,7 +114,8 @@ def post_save_user_changed_receiver(sender, instance, created, *args, **kwargs):
     if not created:
         if instance.is_active == False:
             qs = UserSession.objects.filter(
-                user=instance.user, ended=False, active=False)
+                user=instance.user, ended=False, active=False
+            )
             for i in qs:
                 i.end_session()
 
@@ -130,9 +129,7 @@ def user_logged_in_receiver(sender, instance, request, *args, **kwargs):
     ip_address = get_client_ip(request)
     session_key = request.session.session_key  # Django 1.11
     UserSession.objects.create(
-        user=user,
-        ip_address=ip_address,
-        session_key=session_key
+        user=user, ip_address=ip_address, session_key=session_key
     )
 
 

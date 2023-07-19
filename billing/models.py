@@ -22,7 +22,7 @@ class BillingProfileManager(models.Manager):
         guest_email_id = request.session.get("guest_email_id")
         created = False
         obj = None
-        if user.is_authenticated():
+        if user.is_authenticated:
             "logged in user checkout; remember payment stuff"
             obj, created = self.model.objects.get_or_create(user=user, email=user.email)
         elif guest_email_id is not None:

@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, UpdateView, CreateView
 from django.shortcuts import render, redirect
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 # CRUD create update retrieve delete
 
 from billing.models import BillingProfile
@@ -74,13 +74,13 @@ def checkout_address_create_view(request):
             print("Error here")
             return redirect("cart:checkout")
 
-        if is_safe_url(redirect_path, request.get_host()):
+        if url_has_allowed_host_and_scheme(redirect_path, request.get_host()):
             return redirect(redirect_path)
     return redirect("cart:checkout")
 
 
 def checkout_address_reuse_view(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         context = {}
         next_ = request.GET.get('next')
         next_post = request.POST.get('next')
@@ -97,6 +97,6 @@ def checkout_address_reuse_view(request):
                 if qs.exists():
                     request.session[address_type +
                                     "_address_id"] = shipping_address
-                if is_safe_url(redirect_path, request.get_host()):
+                if url_has_allowed_host_and_scheme(redirect_path, request.get_host()):
                     return redirect(redirect_path)
     return redirect("cart:checkout")
