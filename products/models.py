@@ -130,7 +130,9 @@ class ProductFile(models.Model):
     name = models.CharField(max_length=120, null=True, blank=True)
     file = models.FileField(
         upload_to=upload_product_file_loc,
-        storage=ProtectedS3Storage(),  # FileSystemStorage(location=settings.PROTECTED_ROOT)
+        storage=FileSystemStorage(
+            location=settings.PROTECTED_ROOT
+        ),  # ProtectedS3Storage()
     )  # path
     # filepath        = models.TextField() # '/protected/path/to/the/file/myfile.mp3'
     free = models.BooleanField(default=False)  # purchase required
