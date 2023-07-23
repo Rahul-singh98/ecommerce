@@ -21,23 +21,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-^0welgzleqls$$+v%=sx)$ehr21j4858l(l+_bzf4*y+ux0bdz"
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
-EMAIL_HOST = "	p3plzcpnl452759.prod.phx3.secureserver.net"
-EMAIL_HOST_USER = "rahul.singh@videalpha.com"
-EMAIL_HOST_PASSWORD = "R@hu!@#8510"
-EMAIL_PORT = 465
+EMAIL_HOST = os.environ.get("EMAIL_HOST")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = os.environ.get("EMAIL_PORT")
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = "Python ecommerce < rahul.singh@videalpha.com>"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
 BASE_URL = "127.0.0.1:8000"
 
 
-MANAGERS = (("Rahul Singh", "rahul.singh@videalpha.com"),)
+MANAGERS = ((os.environ.get("ADMIN_NAME"), os.environ.get("ADMIN_EMAIL")),)
 
 ADMINS = MANAGERS
 
@@ -75,13 +75,13 @@ FORCE_SESSION_TO_ONE = False
 FORCE_INACTIVE_USER_ENDSESSION = False
 
 
-MAILCHIMP_API_KEY = "717d0854ed20fed3be3689a3f125915c-us17"
-MAILCHIMP_DATA_CENTER = "us17"
-MAILCHIMP_EMAIL_LIST_ID = "e2ef12efee"
+MAILCHIMP_API_KEY = os.environ.get("MAILCHIMP_API_KEY") 
+MAILCHIMP_DATA_CENTER = os.environ.get("MAILCHIMP_DATA_CENTER") 
+MAILCHIMP_EMAIL_LIST_ID = os.environ.get("MAILCHIMP_EMAIL_LIST_ID") 
 
 
-STRIPE_SECRET_KEY = "sk_test_cu1lQmcg1OLffhLvYrSCp5XE"
-STRIPE_PUB_KEY = "pk_test_PrV61avxnHaWIYZEeiYTTVMZ"
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY") 
+STRIPE_PUB_KEY = os.environ.get("STRIPE_PUB_KEY") 
 
 
 MIDDLEWARE = [
